@@ -11,8 +11,7 @@ import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import net.elastic.spring.model.Customer;
-import net.elastic.spring.dao.CustomerDAO;
+import net.elastic.spring.dto.QueryIndexer;
 
 import net.elastic.spring.recipe.ElasticSearchRequest;
 import net.elastic.spring.recipe.IndexRecipesApp;
@@ -31,7 +30,6 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-//import org.elasticsearch.common.Base64;
 import org.elasticsearch.action.index.IndexRequest;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -184,14 +182,14 @@ public class ElastiSearchService {
         }
     }
     
-    public void IndexComputeController (Customer customer) {
+    public void IndexComputeController (QueryIndexer computeIndex) {
 	    byte[] wikiArray;
 	    String str = null;
 	    IndexResponse response = null;
 
-	    String filePath = customer.getfilePath();
-	    String index    = customer.getindex();
-	    Long   id       = customer.getId();
+	    String filePath = computeIndex.getfilePath();
+	    String index    = computeIndex.getindex();
+	    Long   id       = computeIndex.getId();
 
 	    System.out.println ("inside elastic search controller: " + filePath);
 
@@ -260,13 +258,25 @@ public class ElastiSearchService {
 
                 Response indexResponse = requester.performRequest("GET","/"+index+"/"+"doc"+"/_search", Collections.<String,String>emptyMap(), body);
 
-                System.out.println ("Gaurav search index response is: " + indexResponse);
+                System.out.println ("DEBUG: search index response is: " + indexResponse);
                 String searchresponse = InputStreamToString(indexResponse.getEntity().getContent());
 
                 JSONObject jsonResponse = new JSONObject(searchresponse);
                 int size = jsonResponse.getJSONObject("hits").getInt("total");
                 System.out.println ("DEBUG:  total hit size is:" + size);
-                JSONArray hits = jsonResponse.getJSONObject("hits").getJSONArray("hits");
+
+		if (size > 0) {
+			for (int l = 0; l < size; l++) {
+                		//JSONArray hits = jsonResponse.getJSONObject("hits").getJSONArray("hits").getJSONObject(l);
+				JSONObject hit = jsonResponse.getJSONObject("hits").getJSONArray("hits").getJSONObject(l);
+				//System.out.println ("DEBUG actual hit is: " + hits);
+				int score = (int) (hit.getDouble("_score"));
+				String id = hit.getString("_id");
+
+				System.out.println ("hit score is: " + score);
+				System.out.println ("hit id is: " + id);
+			}
+		}
         } catch (Exception e) {
 		e.printStackTrace();
 	}

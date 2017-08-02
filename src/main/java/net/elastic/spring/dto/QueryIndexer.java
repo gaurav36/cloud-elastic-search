@@ -1,20 +1,18 @@
-package net.elastic.spring.model;
+package net.elastic.spring.dto;
 
-import java.util.Date;
-
-public class Customer {
+public class QueryIndexer {
 
 	private Long id;
 	private String filePath;
 	private String index;
 
-	public Customer(long id, String filePath, String index, String email, String mobile) {
+	public QueryIndexer(long id, String filePath, String index) {
 		this.id = id;
 		this.filePath = filePath;
 		this.index = index;
 	}
 
-	public Customer() {
+	public QueryIndexer() {
 	}
 
 	public Long getId() {

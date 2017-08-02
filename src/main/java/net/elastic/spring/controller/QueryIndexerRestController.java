@@ -15,35 +15,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.elastic.spring.dao.CustomerDAO;
-import net.elastic.spring.model.Customer;
+import net.elastic.spring.dto.QueryIndexer;
 
 @RestController
-public class CustomerRestController {
+public class QueryIndexerRestController {
 
-	
-	@Autowired
-	private CustomerDAO customerDAO;
-
-	@PostMapping(value = "/customers")
-	public ResponseEntity createCustomer(@RequestBody Customer customer) {
-	//public void createCustomer(@RequestBody Customer customer) {
+	@PostMapping(value = "/esearch")
+	public ResponseEntity createIndex(@RequestBody QueryIndexer computeIndex) {
 	
 
 		ElastiSearchService elastiSearchService = null;
 		elastiSearchService = ElastiSearchService.getInstance();
 
-		customerDAO.create(customer);
-		System.out.println ("DEBUG: index is: " + customer.getindex());
-		System.out.println ("DEBUG: file path is: " + customer.getfilePath());
+		System.out.println ("DEBUG: index is: " + computeIndex.getindex());
+		System.out.println ("DEBUG: file path is: " + computeIndex.getfilePath());
 
-		elastiSearchService.IndexComputeController (customer);
+		elastiSearchService.IndexComputeController (computeIndex);
 
-		return new ResponseEntity(customer, HttpStatus.OK);
+		return new ResponseEntity(computeIndex, HttpStatus.OK);
 	}
 
-	@GetMapping("/customers/{index}/{varstr}")
-	public ResponseEntity getCustomer (@PathVariable("varstr") String str, @PathVariable("index") String index) {
+	@GetMapping("/esearch/{index}/{varstr}")
+	public ResponseEntity getQuery (@PathVariable("varstr") String str, @PathVariable("index") String index) {
 
 		ElastiSearchService elastiSearchService = null;
 		elastiSearchService = ElastiSearchService.getInstance();
