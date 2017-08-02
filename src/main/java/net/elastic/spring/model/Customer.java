@@ -5,13 +5,13 @@ import java.util.Date;
 public class Customer {
 
 	private Long id;
-	private String firstName;
-	private String lastName;
+	private String filePath;
+	private String index;
 
-	public Customer(long id, String firstName, String lastName, String email, String mobile) {
+	public Customer(long id, String filePath, String index, String email, String mobile) {
 		this.id = id;
-		this.firstName = firstName;
-		this.lastName = lastName;
+		this.filePath = filePath;
+		this.index = index;
 	}
 
 	public Customer() {
@@ -25,19 +25,19 @@ public class Customer {
 		this.id = id;
 	}
 
-	public String getFirstName() {
-		return firstName;
+	public String getfilePath() {
+		return filePath;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
+	public void setfilePath(String filePath) {
+		this.filePath = filePath;
 	}
 
-	public String getLastName() {
-		return lastName;
+	public String getindex() {
+		return index;
 	}
 
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setindex(String index) {
+		this.index = index;
 	}
 }

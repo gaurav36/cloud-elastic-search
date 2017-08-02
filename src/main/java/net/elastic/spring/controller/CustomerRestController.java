@@ -34,23 +34,23 @@ public class CustomerRestController {
 		elastiSearchService = ElastiSearchService.getInstance();
 
 		customerDAO.create(customer);
-		System.out.println ("gaurav in customer post: " + customer);
-		System.out.println ("gaurav in customer post: " + customer.getId());
-		System.out.println ("gaurav in customer post: " + customer.getFirstName());
+		System.out.println ("DEBUG: index is: " + customer.getindex());
+		System.out.println ("DEBUG: file path is: " + customer.getfilePath());
 
-		elastiSearchService.IndexComputeController (customer.getFirstName());
+		elastiSearchService.IndexComputeController (customer);
 
 		return new ResponseEntity(customer, HttpStatus.OK);
 	}
 
-	@GetMapping("/customers/{varstr}")
-	public ResponseEntity getCustomer (@PathVariable("varstr") String str) {
+	@GetMapping("/customers/{index}/{varstr}")
+	public ResponseEntity getCustomer (@PathVariable("varstr") String str, @PathVariable("index") String index) {
 
 		ElastiSearchService elastiSearchService = null;
 		elastiSearchService = ElastiSearchService.getInstance();
 
-		System.out.println ("elastic search get reqeust id: " + str);
-		elastiSearchService.IndexComputeControllerSearch (str);
+		System.out.println ("DEBUG: reqeusted index is: " + index);
+		System.out.println ("DEBUG: reqeusted query is: " + str);
+		elastiSearchService.IndexComputeControllerSearch (index, str);
 		return new ResponseEntity (HttpStatus.OK);
 	}
 }

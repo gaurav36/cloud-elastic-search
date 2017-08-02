@@ -43,7 +43,7 @@ public class ElasticSearchCRUDTest {
         jsonBuilder.map(data);
         IndexResponse indexResponse = elastiSearchService.createIndex("users", "gg", "1", jsonBuilder);
         IndexResponse indexResponse2 = elastiSearchService.createIndex("gaurav", "kumar", "2", jsonBuilder);
-	System.out.println ("gaurav index response is: " + indexResponse);
+	System.out.println ("DEBUG: index response is: " + indexResponse);
 
 	// If you create index first time it will give you "OK" as a status output but after deleting
 	// index and recreating same index again it will give you "CREATED" status response.

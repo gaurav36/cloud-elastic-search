@@ -11,6 +11,9 @@ import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import net.elastic.spring.model.Customer;
+import net.elastic.spring.dao.CustomerDAO;
+
 import net.elastic.spring.recipe.ElasticSearchRequest;
 import net.elastic.spring.recipe.IndexRecipesApp;
 import org.elasticsearch.action.get.GetResponse;
@@ -61,8 +64,7 @@ public class ElastiSearchService {
                 return true;
             }
         } catch (Exception exception) {
-	     System.out.println ("gaurav error isIndexExist: index error:  " + exception);
-            //logger.error("isIndexExist: index error", exception);
+		exception.printStackTrace();
         }
 
         return false;
@@ -77,8 +79,7 @@ public class ElastiSearchService {
             Thread.sleep(2000);
             return response;
         } catch (Exception e) {
-            System.out.println ("gaurav index creating error" + e);
-            //logger.error("createIndex", e);
+		e.printStackTrace();
         }
         return null;
     }
@@ -88,8 +89,7 @@ public class ElastiSearchService {
             GetResponse getResponse = IndexRecipesApp.getTransportClient().prepareGet(index, type, id).get();
             return getResponse;
         } catch (Exception e) {
-            //logger.error("", e);
-            System.out.println ("gaurav findDocumentByIndex error: " + e);
+		e.printStackTrace();
         }
         return null;
     }
@@ -184,29 +184,21 @@ public class ElastiSearchService {
         }
     }
     
-    public void IndexComputeController (String filePath) {
+    public void IndexComputeController (Customer customer) {
 	    byte[] wikiArray;
 	    String str = null;
 	    IndexResponse response = null;
+
+	    String filePath = customer.getfilePath();
+	    String index    = customer.getindex();
+	    Long   id       = customer.getId();
 
 	    System.out.println ("inside elastic search controller: " + filePath);
 
 	    // Creating pipeline for ingest attachment plugin
 	    createPipeline ();
 
-	    /*IndexRequest indexRequest = new IndexRequest("data", "doc", "1")
-                                            .setPipeline("foo")
-                                            .source(
-                                             jsonBuilder().startObject()
-                                            .field("field", base64)
-                                            .endObject()
-                                            );
-         } catch (Exception e) {
-		 System.out.println ("error while processing POST request of file: " + filePath);
-	 } */
-
-	
-	try {
+	    try {
 		RestClient requester = RestClient.builder( new HttpHost ("localhost", 9300),
 				                           new HttpHost ("localhost", 9200)).build();
 		HttpEntity body = new NStringEntity("{" +
@@ -214,88 +206,15 @@ public class ElastiSearchService {
 		HashMap<String,String> param = new HashMap<String,String>();
 		param.put("pipeline", "attachment");
 
-		System.out.println ("before post request");
-		Response httpresponse = requester.performRequest("PUT", "/"+"data"+"/"+"doc"+"/"+"1", param, body);
-		System.out.println ("after post request");
+		Response httpresponse = requester.performRequest("PUT", "/"+index+"/"+"doc"+"/"+"1", param, body);
 
-		System.out.println ("Gaurav response is: " + httpresponse);
-	} catch (Exception e) {
-		System.out.println ("gaurav error while doing post request of file: " + filePath);
-		System.out.println ("gaurav error is: " + e);
-	}
-        
-        /*try {
-		
-		RestClient requester = RestClient.builder( new HttpHost ("localhost", 9300),
-				                           new HttpHost ("localhost", 9200)).build();
-
-		Map<String, String> paramMap = new HashMap<String, String>();
-		paramMap.put("q", "*:*");
-		paramMap.put("pretty", "true");
-
-		//HttpEntity body = new NStringEntity(
-		//		"{\"_source\":[\"attachment.author\"],\n" +
-		//		"\"query\": {" +
-		//		"\"match_all\": {}" +
-		//		"}" +
-		//		"}", ContentType.APPLICATION_JSON);
-
-		//HttpEntity body = new NStringEntity(
-		//		"{\"query\": {\n" +
-		//		"\"match_phrase\": {\n" +
-		//		//"\"match\": {\n" +
-		//		//"file.content": {
-		//		"\"attachment.content\": {\n" +
-		//		"\"query\": \"" + "Kaution" + "\",\n"
-		//		"}\n" +
-		//		"}\n" +
-		//		"}\n" +
-		//		"}", ContentType.APPLICATION_JSON);
-		
-		HttpEntity body = new NStringEntity(
-                                    "{\"query\": {\n" +
-                                            "        \"match_phrase\": {\n" +
-                                            "            \"attachment.content\": {\n" +
-                                            //"              \"query\": \"" + "gauravk" + "\",\n" +
-                                            //"              \"query\": \"" + "Kaution" + "\",\n" +
-                                            "              \"query\": \"" + "Sicherung" + "\",\n" +
-                                            "\t  \"slop\": 1\n" +
-                                            "            }\n" +
-                                            "        }\n" +
-                                            "    }\n" +
-                                            //"    },\n" +
-                                            //"    \"highlight\": {\n" +
-                                            //"        \"pre_tags\" : [\"<mark>\"],\n" +
-                                            //"        \"post_tags\" : [\"</mark>\"],\n" +
-                                            //"        \"fields\" : {\n" +
-                                            //"            \"attachment.content\" : {\n" +
-                                            //"                \"fragmenter\" : \"span\",\n" +
-                                            //"                \"boundary_scanner\" : \"sentence\"\n" +
-                                            //"            }\n" +
-                                            //"        }\n" +
-                                            //"    }\n  " +
-
-                                            "    }", ContentType.APPLICATION_JSON);
-
-		Response indexResponse = requester.performRequest("GET","/"+"data"+"/"+"doc"+"/_search", Collections.<String,String>emptyMap(), body);
-		
-		System.out.println ("Gaurav search index response is: " + indexResponse);
-		String searchresponse = InputStreamToString(indexResponse.getEntity().getContent());
-		//System.out.println ("gaurav response of search is: "+searchresponse);
-
-		JSONObject jsonResponse = new JSONObject(searchresponse);
-		int size = jsonResponse.getJSONObject("hits").getInt("total");
-		System.out.println ("gaurav total hit size is:" + size);
-		JSONArray hits = jsonResponse.getJSONObject("hits").getJSONArray("hits");
-	//	System.out.println ("gaurav total hit is:" + hits);
-	} catch (Exception e) {
-		System.out.println ("gaurav error while doing get request: ");
-		System.out.println ("gaurav error is: " + e);
-	}*/
+		System.out.println ("POST response is: " + httpresponse);
+	    } catch (Exception e) {
+		    e.printStackTrace();
+	    }
     }
 
-    public void IndexComputeControllerSearch (String searchStr) {
-	System.out.println ("inside controller handler search query is: " + searchStr);
+    public void IndexComputeControllerSearch (String index, String searchStr) {
 	try {
 		RestClient requester = RestClient.builder( new HttpHost ("localhost", 9300),
                                                            new HttpHost ("localhost", 9200)).build();
@@ -303,13 +222,6 @@ public class ElastiSearchService {
                 Map<String, String> paramMap = new HashMap<String, String>();
                 paramMap.put("q", "*:*");
                 paramMap.put("pretty", "true");
-
-                /*HttpEntity body = new NStringEntity(
-                                "{\"_source\":[\"attachment.author\"],\n" +
-                                "\"query\": {" +
-                                "\"match_all\": {}" +
-                                "}" +
-                                "}", ContentType.APPLICATION_JSON);*/
 
                 /*HttpEntity body = new NStringEntity(
                                 "{\"query\": {\n" +
@@ -327,8 +239,6 @@ public class ElastiSearchService {
                                     "{\"query\": {\n" +
                                             "        \"match_phrase\": {\n" +
                                             "            \"attachment.content\": {\n" +
-                                            //"              \"query\": \"" + "gauravk" + "\",\n" +
-                                            //"              \"query\": \"" + "Kaution" + "\",\n" +
                                             "              \"query\": \"" + searchStr + "\",\n" +
                                             "\t  \"slop\": 1\n" +
                                             "            }\n" +
@@ -348,20 +258,17 @@ public class ElastiSearchService {
 
                                             "    }", ContentType.APPLICATION_JSON);
 
-                Response indexResponse = requester.performRequest("GET","/"+"data"+"/"+"doc"+"/_search", Collections.<String,String>emptyMap(), body);
+                Response indexResponse = requester.performRequest("GET","/"+index+"/"+"doc"+"/_search", Collections.<String,String>emptyMap(), body);
 
                 System.out.println ("Gaurav search index response is: " + indexResponse);
                 String searchresponse = InputStreamToString(indexResponse.getEntity().getContent());
-                //System.out.println ("gaurav response of search is: "+searchresponse);
 
                 JSONObject jsonResponse = new JSONObject(searchresponse);
                 int size = jsonResponse.getJSONObject("hits").getInt("total");
-                System.out.println ("gaurav total hit size is:" + size);
+                System.out.println ("DEBUG:  total hit size is:" + size);
                 JSONArray hits = jsonResponse.getJSONObject("hits").getJSONArray("hits");
-        //      System.out.println ("gaurav total hit is:" + hits);
         } catch (Exception e) {
-                System.out.println ("gaurav error while doing get request: ");
-                System.out.println ("gaurav error is: " + e);
+		e.printStackTrace();
 	}
     }
 
@@ -376,9 +283,9 @@ public class ElastiSearchService {
 
         File file = new File(path);
 
-        //if (!file.exists()) {
-        //    throw new Exception("File does not exist");
-        //}
+        if (!file.exists()) {
+            throw new Exception("File does not exist");
+        }
 
         //Reading and encoding files
         byte fileContent[] = Files.readAllBytes(file.toPath());
