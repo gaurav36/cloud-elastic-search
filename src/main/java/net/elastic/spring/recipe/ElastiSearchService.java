@@ -151,6 +151,12 @@ public class ElastiSearchService {
                 "        \"field\": \"data\",\n" +
                 "        \"indexed_chars\": -1\n" +
                 "      }\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"set\": {\n" +
+                "        \"field\": \"attachment.title\",\n" +
+                "        \"value\": \"{{title}}\"\n" +
+                "      }\n" +
                 "    }\n" +
                 "  ] \n" +
                 "}\n",ContentType.APPLICATION_JSON);
@@ -200,11 +206,13 @@ public class ElastiSearchService {
 		RestClient requester = RestClient.builder( new HttpHost ("localhost", 9300),
 				                           new HttpHost ("localhost", 9200)).build();
 		HttpEntity body = new NStringEntity("{" +
-				"\"data\":\"" + encoder(filePath) + "\"" + "}", ContentType.APPLICATION_JSON);
+				"\"data\":\"" + encoder(filePath) + "\"" + ",\n" +
+				"\"title\":\"" + filePath + "\"" +
+				"}", ContentType.APPLICATION_JSON);
 		HashMap<String,String> param = new HashMap<String,String>();
 		param.put("pipeline", "attachment");
 
-		Response httpresponse = requester.performRequest("PUT", "/"+index+"/"+"doc"+"/"+"1", param, body);
+		Response httpresponse = requester.performRequest("PUT", "/"+index+"/"+"doc"+"/"+id, param, body);
 
 		System.out.println ("POST response is: " + httpresponse);
 	    } catch (Exception e) {
@@ -267,12 +275,16 @@ public class ElastiSearchService {
 
 		if (size > 0) {
 			for (int l = 0; l < size; l++) {
-                		//JSONArray hits = jsonResponse.getJSONObject("hits").getJSONArray("hits").getJSONObject(l);
-				JSONObject hit = jsonResponse.getJSONObject("hits").getJSONArray("hits").getJSONObject(l);
-				//System.out.println ("DEBUG actual hit is: " + hits);
-				int score = (int) (hit.getDouble("_score"));
-				String id = hit.getString("_id");
+				JSONArray  Analysehits = jsonResponse.getJSONObject("hits").getJSONArray("hits");
+				JSONObject hit         = jsonResponse.getJSONObject("hits").getJSONArray("hits").
+					                                                    getJSONObject(l);
 
+				String id    = hit.getString("_id");
+				int    score = (int) (hit.getDouble("_score"));
+				String title = Analysehits.getJSONObject(l).getJSONObject("_source").
+					       getJSONObject("attachment").getString("title");
+
+				System.out.println ("file name is: " + title);
 				System.out.println ("hit score is: " + score);
 				System.out.println ("hit id is: " + id);
 			}
