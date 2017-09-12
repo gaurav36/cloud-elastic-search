@@ -43,6 +43,19 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.json.JSONObject;
 import org.json.JSONArray;
+import java.util.concurrent.CountDownLatch;
+//import org.apache.http.nio.protocol.HttpAsyncResponseConsumer;
+//import org.elasticsearch.client.http.nio.protocol.HttpAsyncResponseConsumer;
+//import org.elasticsearch.client.ResponseListener;
+//import org.elasticsearch.client.http.nio.protocol.HttpAsyncResponseConsumer;
+import org.elasticsearch.client.ResponseListener;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.codec.binary.Base64OutputStream;
+import org.apache.http.impl.nio.reactor.IOReactorConfig;
+
 
 /**
  */
@@ -187,6 +200,32 @@ public class ElastiSearchService {
             return ""; 
         }
     }
+
+    RestClient requester;
+
+    public void RestClientBuilder() {
+       requester = RestClient.builder( new HttpHost ("192.168.178.79", 9300),
+                                       new HttpHost ("192.168.178.79", 9200)).setHttpClientConfigCallback(
+                                       new RestClientBuilder.HttpClientConfigCallback() {
+                                   @Override
+                                   public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                                      return httpClientBuilder.setDefaultIOReactorConfig(
+                                           IOReactorConfig.custom().setIoThreadCount(1).build());
+                                   }
+                               })
+                               .build();
+    }
+
+    public void RestClientCleanUp() {
+        System.out.println ("Closing restclient resources....");
+        try {
+            requester.close();
+            System.out.println ("restclient resources cleaned up....");
+        } catch (Exception e) {
+            e.printStackTrace();
+       }
+    }
+
     
     public void IndexComputeController (QueryIndexer computeIndex) {
 	    byte[] wikiArray;
@@ -198,13 +237,17 @@ public class ElastiSearchService {
 	    Long   id       = computeIndex.getId();
 
 	    System.out.println ("inside elastic search controller: " + filePath);
+            System.setProperty("io.netty.allocator.type", "unpooled");
 
 	    // Creating pipeline for ingest attachment plugin
-	    createPipeline ();
+	    //createPipeline ();
+
+	    //final CountDownLatch latch = new CountDownLatch(1);
 
 	    try {
-		RestClient requester = RestClient.builder( new HttpHost ("localhost", 9300),
-				                           new HttpHost ("localhost", 9200)).build();
+		/*RestClient requester = RestClient.builder( new HttpHost ("localhost", 9300),
+				                           new HttpHost ("localhost", 9200)).build();*/
+
 		HttpEntity body = new NStringEntity("{" +
 				"\"data\":\"" + encoder(filePath) + "\"" + ",\n" +
 				"\"title\":\"" + filePath + "\"" +
@@ -212,9 +255,27 @@ public class ElastiSearchService {
 		HashMap<String,String> param = new HashMap<String,String>();
 		param.put("pipeline", "attachment");
 
-		Response httpresponse = requester.performRequest("PUT", "/"+index+"/"+"doc"+"/"+id, param, body);
+		/*ResponseListener listner = 		                                       new ResponseListener() {
+									       @Override
+									       public void onSuccess(Response response) {
+										       System.out.println(response);
+										       latch.countDown();
+									       }
 
-		System.out.println ("POST response is: " + httpresponse);
+									       @Override
+									       public void onFailure(Exception exception) {
+										       latch.countDown();
+									       }
+		                                                     };*/
+		Response httpresponse = requester.performRequest("PUT", "/"+index+"/"+"doc"+"/"+id, param, body);
+		//Response httpresponse = requester.performRequestAsync("PUT", "/"+index+"/"+"doc"+"/"+id, param, body);
+		//Response httpresponse = requester.performRequestAsync("PUT", "/"+index+"/"+"doc"+"/"+id, param, body, null
+		//Response httpresponse = requester.performRequestAsync("PUT", "/"+index+"/"+"doc"+"/"+id, param, body, listner
+		//requester.performRequestAsync("PUT", "/"+index+"/"+"doc"+"/"+id, param, body, listner);
+
+		//latch.await();
+		//System.out.println ("POST response is: " + httpresponse);
+		//requester.close();
 	    } catch (Exception e) {
 		    e.printStackTrace();
 	    }
@@ -297,7 +358,8 @@ public class ElastiSearchService {
     public static String encoder(String path) throws Exception {
 
         String[] splitPath = path.split("\\.");
-        String extension = splitPath[1];
+        //String[] splitPath = path.split("\\.", -1)[0];
+        //String extension = splitPath[1];
 
         //if (!extension.equals("pdf")) {
         //    throw new UnsupportedOperationException();
@@ -305,6 +367,7 @@ public class ElastiSearchService {
 
         File file = new File(path);
 
+        System.out.println ("DEBUG:: file name is: " + path + " file size is: " + file.length()/1024 + " KB");
         if (!file.exists()) {
             throw new Exception("File does not exist");
         }
