@@ -86,6 +86,10 @@ done
 [ $# -eq 0 ] && usage
 while getopts ":hlau:o:" arg; do
   case $arg in
+    u)
+       echo "in option u"
+       NODE=${OPTARG}
+       ;;
     l)
        ALL_INDICES=$(curl  --silent "$NODE/_cat/indices" | awk '{print $3}')
        if [ -z "$ALL_INDICES" ]; then
@@ -94,10 +98,6 @@ while getopts ":hlau:o:" arg; do
        fi
        echo $ALL_INDICES
        exit 0
-       ;;
-    u)
-       echo "in option u"
-       NODE=${OPTARG}
        ;;
     o)
        echo "in logfile option"

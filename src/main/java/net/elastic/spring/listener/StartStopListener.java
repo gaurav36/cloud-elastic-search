@@ -17,7 +17,7 @@ public class StartStopListener implements ServletContextListener {
 
 	elastiSearchService.RestClientBuilder();
         
-        System.out.println("Gaurav Servlet has been started.");
+        System.out.println("Servlet has been started.");
     }
 
     @Override

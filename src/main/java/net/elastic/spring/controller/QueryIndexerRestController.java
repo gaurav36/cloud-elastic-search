@@ -27,9 +27,6 @@ public class QueryIndexerRestController {
 		ElastiSearchService elastiSearchService = null;
 		elastiSearchService = ElastiSearchService.getInstance();
 
-		System.out.println ("DEBUG: index is: " + computeIndex.getindex());
-		System.out.println ("DEBUG: file path is: " + computeIndex.getfilePath());
-
 		elastiSearchService.IndexComputeController (computeIndex);
 
 		return new ResponseEntity(computeIndex, HttpStatus.OK);
@@ -41,8 +38,6 @@ public class QueryIndexerRestController {
 		ElastiSearchService elastiSearchService = null;
 		elastiSearchService = ElastiSearchService.getInstance();
 
-		System.out.println ("DEBUG: reqeusted index is: " + index);
-		System.out.println ("DEBUG: reqeusted query is: " + str);
 		elastiSearchService.IndexComputeControllerSearch (index, str);
 		return new ResponseEntity (HttpStatus.OK);
 	}

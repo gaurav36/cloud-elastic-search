@@ -14,13 +14,14 @@ import java.net.UnknownHostException;
 
 
 /**
+ * @author Gaurav Garg
  */
 public class IndexRecipesApp {
     public static TransportClient getTransportClient () throws UnknownHostException {
 	try {
 		// create client for localhost es
 		TransportClient client = new PreBuiltTransportClient(Settings.EMPTY)
-					 .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+					 .addTransportAddress(new InetSocketTransportAddress(                                                                               InetAddress.getByName("localhost"), 9300));
 		return client;
 	} catch (Exception e) {
 		e.printStackTrace();

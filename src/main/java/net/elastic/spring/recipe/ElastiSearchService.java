@@ -44,10 +44,6 @@ import org.elasticsearch.client.RestClientBuilder;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import java.util.concurrent.CountDownLatch;
-//import org.apache.http.nio.protocol.HttpAsyncResponseConsumer;
-//import org.elasticsearch.client.http.nio.protocol.HttpAsyncResponseConsumer;
-//import org.elasticsearch.client.ResponseListener;
-//import org.elasticsearch.client.http.nio.protocol.HttpAsyncResponseConsumer;
 import org.elasticsearch.client.ResponseListener;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
@@ -58,6 +54,7 @@ import org.apache.http.impl.nio.reactor.IOReactorConfig;
 
 
 /**
+ * @author Gaurav Garg
  */
 public class ElastiSearchService {
     private static ElastiSearchService instance = null;
@@ -118,7 +115,7 @@ public class ElastiSearchService {
             SearchHit[] results = response.getHits().getHits();
             return response;
         } catch (Exception e) {
-            //logger.error("", e);
+	    e.printStackTrace();
             System.out.println ("Debug: findDocumentByValue error: " + e);
         }
         return null;
@@ -136,7 +133,7 @@ public class ElastiSearchService {
             System.out.println("Debug: logging response is: " + response);
             return response;
         } catch (Exception e) {
-            //logger.error("UpdateIndex", e);
+	    e.printStackTrace();
             System.out.println("Debug: error in UpdateIndex:  " + e);
         }
         return null;
@@ -148,7 +145,7 @@ public class ElastiSearchService {
             response = IndexRecipesApp.getTransportClient().prepareDelete(index, type, id).execute().actionGet();
             return response;
         } catch (Exception e) {
-            //logger.error("RemoveIndex", e);
+	    e.printStackTrace();
         }
         return null;
     }
@@ -177,7 +174,6 @@ public class ElastiSearchService {
             requester.performRequest("PUT","/_ingest/pipeline/attachment", Collections.<String,String>emptyMap(), body);
         } catch (IOException e) {
             e.printStackTrace();
-
             return false;
         }
 
@@ -197,6 +193,7 @@ public class ElastiSearchService {
             return response;
         }
             catch (Exception e) {
+                e.printStackTrace();
             return ""; 
         }
     }
@@ -239,15 +236,7 @@ public class ElastiSearchService {
 	    System.out.println ("inside elastic search controller: " + filePath);
             System.setProperty("io.netty.allocator.type", "unpooled");
 
-	    // Creating pipeline for ingest attachment plugin
-	    //createPipeline ();
-
-	    //final CountDownLatch latch = new CountDownLatch(1);
-
 	    try {
-		/*RestClient requester = RestClient.builder( new HttpHost ("localhost", 9300),
-				                           new HttpHost ("localhost", 9200)).build();*/
-
 		HttpEntity body = new NStringEntity("{" +
 				"\"data\":\"" + encoder(filePath) + "\"" + ",\n" +
 				"\"title\":\"" + filePath + "\"" +
@@ -255,27 +244,7 @@ public class ElastiSearchService {
 		HashMap<String,String> param = new HashMap<String,String>();
 		param.put("pipeline", "attachment");
 
-		/*ResponseListener listner = 		                                       new ResponseListener() {
-									       @Override
-									       public void onSuccess(Response response) {
-										       System.out.println(response);
-										       latch.countDown();
-									       }
-
-									       @Override
-									       public void onFailure(Exception exception) {
-										       latch.countDown();
-									       }
-		                                                     };*/
 		Response httpresponse = requester.performRequest("PUT", "/"+index+"/"+"doc"+"/"+id, param, body);
-		//Response httpresponse = requester.performRequestAsync("PUT", "/"+index+"/"+"doc"+"/"+id, param, body);
-		//Response httpresponse = requester.performRequestAsync("PUT", "/"+index+"/"+"doc"+"/"+id, param, body, null
-		//Response httpresponse = requester.performRequestAsync("PUT", "/"+index+"/"+"doc"+"/"+id, param, body, listner
-		//requester.performRequestAsync("PUT", "/"+index+"/"+"doc"+"/"+id, param, body, listner);
-
-		//latch.await();
-		//System.out.println ("POST response is: " + httpresponse);
-		//requester.close();
 	    } catch (Exception e) {
 		    e.printStackTrace();
 	    }
@@ -289,18 +258,6 @@ public class ElastiSearchService {
                 Map<String, String> paramMap = new HashMap<String, String>();
                 paramMap.put("q", "*:*");
                 paramMap.put("pretty", "true");
-
-                /*HttpEntity body = new NStringEntity(
-                                "{\"query\": {\n" +
-                                "\"match_phrase\": {\n" +
-                                //"\"match\": {\n" +
-                                //"file.content": {
-                                "\"attachment.content\": {\n" +
-                                "\"query\": \"" + "Kaution" + "\",\n"
-                                "}\n" +
-                                "}\n" +
-                                "}\n" +
-                                "}", ContentType.APPLICATION_JSON);*/
 
                 HttpEntity body = new NStringEntity(
                                     "{\"query\": {\n" +
@@ -388,23 +345,6 @@ public class ElastiSearchService {
             return builder.get();
         } catch (Exception e) {
             //logger.error("findByMultipleIndexs", e);
-        }
-        return null;
-    }
-
-    public List<String> getAlldata(MultiGetResponse multiGetResponse) {
-        List<String> data = new ArrayList<>();
-        try {
-            for (MultiGetItemResponse itemResponse : multiGetResponse) {
-                GetResponse response = itemResponse.getResponse();
-                if (response.isExists()) {
-                    String json = response.getSourceAsString();
-                    data.add(json);
-                }
-            }
-            return data;
-        } catch (Exception e) {
-            //logger.error("", e);
         }
         return null;
     }*/

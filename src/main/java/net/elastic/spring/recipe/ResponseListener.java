@@ -1,5 +1,3 @@
-
-
 package net.elastic.spring.recipe;
 
 import org.elasticsearch.client.Response;
