@@ -1,6 +1,6 @@
 package net.elastic.spring.controller;
 
-import java.util.List;
+import java.util.*;
 
 import net.elastic.spring.recipe.ElastiSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +35,13 @@ public class QueryIndexerRestController {
 	@GetMapping("/esearch/{index}/{varstr}")
 	public ResponseEntity getQuery (@PathVariable("varstr") String str, @PathVariable("index") String index) {
 
+		ArrayList <String> rFiles = new ArrayList<String>();
 		ElastiSearchService elastiSearchService = null;
 		elastiSearchService = ElastiSearchService.getInstance();
 
-		elastiSearchService.IndexComputeControllerSearch (index, str);
-		return new ResponseEntity (HttpStatus.OK);
+		rFiles = elastiSearchService.IndexComputeControllerSearch (index, str);
+
+		// returing list of searched file in the Get Response which contain String $str
+		return new ResponseEntity<ArrayList>(rFiles, HttpStatus.OK);
 	}
 }

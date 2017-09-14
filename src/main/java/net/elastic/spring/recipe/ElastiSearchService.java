@@ -250,7 +250,8 @@ public class ElastiSearchService {
 	    }
     }
 
-    public void IndexComputeControllerSearch (String index, String searchStr) {
+    public ArrayList<String> IndexComputeControllerSearch (String index, String searchStr) {
+	ArrayList<String> rfiles = new ArrayList<String>();
 	try {
 		RestClient requester = RestClient.builder( new HttpHost ("localhost", 9300),
                                                            new HttpHost ("localhost", 9200)).build();
@@ -302,6 +303,7 @@ public class ElastiSearchService {
 				String title = Analysehits.getJSONObject(l).getJSONObject("_source").
 					       getJSONObject("attachment").getString("title");
 
+				rfiles.add (title);
 				System.out.println ("file name is: " + title);
 				System.out.println ("hit score is: " + score);
 				System.out.println ("hit id is: " + id);
@@ -310,6 +312,7 @@ public class ElastiSearchService {
         } catch (Exception e) {
 		e.printStackTrace();
 	}
+	return rfiles;
     }
 
     public static String encoder(String path) throws Exception {
